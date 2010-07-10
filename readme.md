@@ -35,4 +35,3 @@ here is a list of assembled components
 things we still need to extract and clean up from other projects
 
 * facebook auth via oauth2 redirection (for mobile support)
-* user model

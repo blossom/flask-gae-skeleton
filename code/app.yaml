@@ -1,0 +1,26 @@
+application: deck-flask-gae
+version: 1
+runtime: python
+api_version: 1
+
+admin_console:
+  pages:
+  - name: Appstats
+    url: /stats
+
+derived_file_type:
+- python_precompiled
+
+handlers:
+- url: /favicon.ico
+  static_files: static/img/favicon.ico
+  upload: static/img/favicon.ico
+
+- url: /stats.*
+  script: $PYTHON_LIB/google/appengine/ext/appstats/ui.py
+
+- url: /static
+  static_dir: static
+
+- url: /.*
+  script: boot.py

@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+  <head>
+    <title>flask on gae</title>
+    <style>
+      body {
+        width: 600px;
+        margin: 30px auto 0 auto;
+        font-family: Helvetica, "Helvetica Neue", sans-serif;
+        color: #444444;
+      }
+      img {
+        border: 0;
+      }
+      #friends {
+        clear: both;
+      }
+      #notification {
+        height: 22px;
+      }
+      #notification strong {
+        font-weight: normal;
+        background: #FEF1FF;
+        padding: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="notification">
+      {% if g.user %}
+      <div id="login"><strong>we will inform you as soon as we are ready :)</strong></div>
+      {% else %}
+      <div id="login"><img src="/static/img/facebook.png" width="154" height="22" /></div>
+      {% endif %}
+    </div>
+
+    <div id="friends">
+      <fb:friendpile width="600"></fb:friendpile>
+    </div>
+  </div>
+
+  <div id="fb-root"></div>
+  <script src="http://www.google.com/jsapi"></script> 
+  <script>google.load("jquery", "1.4.2");</script>
+  <script>
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId: '{{ g.facebook_application_id }}',
+        status: true,
+        cookie: true,
+        xfbml: true
+      });
+
+      // fetch the status on load
+      FB.getLoginStatus(handleSessionResponse);
+    };
+
+    (function() {
+      var e = document.createElement('script');
+      e.async = true;
+      e.src = document.location.protocol + '//connect.facebook.net/en_US/all.js';
+      document.getElementById('fb-root').appendChild(e);
+    }());
+    
+    $('#login').bind('click', function() {
+      FB.login(handleSessionResponse, {perms:'email'});
+    });
+
+    // handle a session response from any of the auth related calls
+    function handleSessionResponse(response) {
+      jQuery.ajax({
+        type: "PUT",
+        url: "/session/",
+        success: function(response) {
+          $('#login').html('<strong>we will inform you as soon as blossom is ready :)</strong>').show('fast');
+        }
+      });
+    }
+  </script>
+  </body>
+</html>

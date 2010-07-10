@@ -1,4 +1,8 @@
-since we want to get started with a new ideas/projects quickly, we created a project skeleton which includes some of the things (libs and configuration) that we pick for most projects.
+# Motivation
+
+We are currently migrating our projects from [django](http://www.djangoproject.com) to [flask](http://flask.pocoo.org).
+Since we also intend to use flask for entirely new projects, it made sense to save on initial setup time.
+So we created a project skeleton which includes some of the things (libs and configuration) that we pick for most projects.
 
 # Includes
 

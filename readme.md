@@ -8,10 +8,11 @@ So we created a project skeleton which includes some of the things (libs and con
 
 here is a list of assembled components
 
-* flask 0.5.1
+* flask 0.6
 * flask decorators for (cache_page, login_required)
-* jinja 2.5
+* jinja 2.5.2
 * werkzeug 0.6.2
+* gae specific monkeypatch for werkzeug debugger (http://dev.pocoo.org/projects/werkzeug/wiki/UsingDebuggerWithAppEngine)
 * a simple user model
 * google appengine specific development/production environment switch
 * google appengine appstats configured

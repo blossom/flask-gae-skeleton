@@ -32,6 +32,7 @@ except ImportError:
         except ImportError:
             json_available = False
 
+
 from werkzeug import Headers, wrap_file, is_resource_modified, cached_property
 from werkzeug.exceptions import NotFound
 
@@ -55,6 +56,15 @@ if not json_available or '\\/' not in json.dumps('/'):
         return json.dumps(*args, **kwargs).replace('/', '\\/')
 else:
     _tojson_filter = json.dumps
+
+
+def _endpoint_from_view_func(view_func):
+    """Internal helper that returns the default endpoint for a given
+    function.  This always is the function name.
+    """
+    assert view_func is not None, 'expected view func if endpoint ' \
+                                  'is not provided.'
+    return view_func.__name__
 
 
 def jsonify(*args, **kwargs):
@@ -88,6 +98,48 @@ def jsonify(*args, **kwargs):
         _assert_have_json()
     return current_app.response_class(json.dumps(dict(*args, **kwargs),
         indent=None if request.is_xhr else 2), mimetype='application/json')
+
+
+def make_response(*args):
+    """Sometimes it is necessary to set additional headers in a view.  Because
+    views do not have to return response objects but can return a value that
+    is converted into a response object by Flask itself, it becomes tricky to
+    add headers to it.  This function can be called instead of using a return
+    and you will get a response object which you can use to attach headers.
+
+    If view looked like this and you want to add a new header::
+
+        def index():
+            return render_template('index.html', foo=42)
+
+    You can now do something like this::
+
+        def index():
+            response = make_response(render_template('index.html', foo=42))
+            response.headers['X-Parachutes'] = 'parachutes are cool'
+            return response
+
+    This function accepts the very same arguments you can return from a
+    view function.  This for example creates a response with a 404 error
+    code::
+
+        response = make_response(render_template('not_found.html'), 404)
+
+    Internally this function does the following things:
+
+    -   if no arguments are passed, it creates a new response argument
+    -   if one argument is passed, :meth:`flask.Flask.make_response`
+        is invoked with it.
+    -   if more than one argument is passed, the arguments are passed
+        to the :meth:`flask.Flask.make_response` function as tuple.
+
+    .. versionadded:: 0.6
+    """
+    if not args:
+        return current_app.response_class()
+    if len(args) == 1:
+        args = args[0]
+    return current_app.make_response(args)
 
 
 def url_for(endpoint, **values):
@@ -238,6 +290,7 @@ def send_file(filename_or_fp, mimetype=None, as_attachment=False,
     :param conditional: set to `True` to enable conditional responses.
     :param cache_timeout: the timeout in seconds for the headers.
     """
+    mtime = None
     if isinstance(filename_or_fp, basestring):
         filename = filename_or_fp
         file = None
@@ -270,10 +323,20 @@ def send_file(filename_or_fp, mimetype=None, as_attachment=False,
     else:
         if file is None:
             file = open(filename, 'rb')
+            mtime = os.path.getmtime(filename)
         data = wrap_file(request.environ, file)
 
     rv = current_app.response_class(data, mimetype=mimetype, headers=headers,
                                     direct_passthrough=True)
+
+    # if we know the file modification date, we can store it as the
+    # current time to better support conditional requests.  Werkzeug
+    # as of 0.6.1 will override this value however in the conditional
+    # response with the current time.  This will be fixed in Werkzeug
+    # with a new release, however many WSGI servers will still emit
+    # a separate date header.
+    if mtime is not None:
+        rv.date = int(mtime)
 
     rv.cache_control.public = True
     if cache_timeout:
@@ -364,9 +427,7 @@ class _PackageBoundObject(object):
 
         .. versionadded:: 0.5
         """
-        template_folder = os.path.join(self.root_path, 'templates')
-        if os.path.isdir(template_folder):
-            return FileSystemLoader(template_folder)
+        return FileSystemLoader(os.path.join(self.root_path, 'templates'))
 
     def send_static_file(self, filename):
         """Function used internally to send static files from the static

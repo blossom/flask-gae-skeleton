@@ -9,13 +9,13 @@
     :license: BSD, see LICENSE for more details.
 """
 
-from .helpers import _PackageBoundObject
+from .helpers import _PackageBoundObject, _endpoint_from_view_func
 
 
 def _register_module(module, static_path):
     """Internal helper function that returns a function for recording
     that registers the `send_static_file` function for the module on
-    the application of necessary.  It also registers the module on
+    the application if necessary.  It also registers the module on
     the application.
     """
     def _register(state):
@@ -37,9 +37,10 @@ def _register_module(module, static_path):
 
 class _ModuleSetupState(object):
 
-    def __init__(self, app, url_prefix=None):
+    def __init__(self, app, url_prefix=None, subdomain=None):
         self.app = app
         self.url_prefix = url_prefix
+        self.subdomain = subdomain
 
 
 class Module(_PackageBoundObject):
@@ -94,6 +95,9 @@ class Module(_PackageBoundObject):
        modules to refer to their own templates and static files.  See
        :ref:`modules-and-resources` for more information.
 
+    .. versionadded:: 0.6
+       The `subdomain` parameter was added.
+
     :param import_name: the name of the Python package or module
                         implementing this :class:`Module`.
     :param name: the internal short name for the module.  Unless specified
@@ -101,6 +105,8 @@ class Module(_PackageBoundObject):
     :param url_prefix: an optional string that is used to prefix all the
                        URL rules of this module.  This can also be specified
                        when registering the module with the application.
+    :param subdomain: used to set the subdomain setting for URL rules that
+                      do not have a subdomain setting set.
     :param static_path: can be used to specify a different path for the
                         static files on the web.  Defaults to ``/static``.
                         This does not affect the folder the files are served
@@ -108,7 +114,7 @@ class Module(_PackageBoundObject):
     """
 
     def __init__(self, import_name, name=None, url_prefix=None,
-                 static_path=None):
+                 static_path=None, subdomain=None):
         if name is None:
             assert '.' in import_name, 'name required if package name ' \
                 'does not point to a submodule'
@@ -116,6 +122,7 @@ class Module(_PackageBoundObject):
         _PackageBoundObject.__init__(self, import_name)
         self.name = name
         self.url_prefix = url_prefix
+        self.subdomain = subdomain
         self._register_events = [_register_module(self, static_path)]
 
     def route(self, rule, **options):
@@ -127,15 +134,25 @@ class Module(_PackageBoundObject):
             return f
         return decorator
 
-    def add_url_rule(self, rule, endpoint, view_func=None, **options):
+    def add_url_rule(self, rule, endpoint=None, view_func=None, **options):
         """Like :meth:`Flask.add_url_rule` but for a module.  The endpoint for
         the :func:`url_for` function is prefixed with the name of the module.
+
+        .. versionchanged:: 0.6
+           The `endpoint` argument is now optional and will default to the
+           function name to consistent with the function of the same name
+           on the application object.
         """
         def register_rule(state):
             the_rule = rule
             if state.url_prefix:
                 the_rule = state.url_prefix + rule
-            state.app.add_url_rule(the_rule, '%s.%s' % (self.name, endpoint),
+            options.setdefault('subdomain', state.subdomain)
+            the_endpoint = endpoint
+            if the_endpoint is None:
+                the_endpoint = _endpoint_from_view_func(view_func)
+            state.app.add_url_rule(the_rule, '%s.%s' % (self.name,
+                                                        the_endpoint),
                                    view_func, **options)
         self._record(register_rule)
 

@@ -11,7 +11,6 @@
 
 from __future__ import with_statement
 
-import os
 from threading import Lock
 from datetime import timedelta, datetime
 from itertools import chain
@@ -20,10 +19,10 @@ from jinja2 import Environment
 
 from werkzeug import ImmutableDict
 from werkzeug.routing import Map, Rule
-from werkzeug.exceptions import HTTPException, InternalServerError, NotFound
+from werkzeug.exceptions import HTTPException, InternalServerError
 
 from .helpers import _PackageBoundObject, url_for, get_flashed_messages, \
-    _tojson_filter
+    _tojson_filter, _endpoint_from_view_func
 from .wrappers import Request, Response
 from .config import ConfigAttribute, Config
 from .ctx import _RequestContext
@@ -31,7 +30,8 @@ from .globals import _request_ctx_stack, request
 from .session import Session, _NullSession
 from .module import _ModuleSetupState
 from .templating import _DispatchingJinjaLoader, \
-     _default_template_ctx_processor
+    _default_template_ctx_processor
+from .signals import request_started, request_finished, got_request_exception
 
 # a lock used for logger initialization
 _logger_lock = Lock()
@@ -193,7 +193,8 @@ class Flask(_PackageBoundObject):
         'PERMANENT_SESSION_LIFETIME':           timedelta(days=31),
         'USE_X_SENDFILE':                       False,
         'LOGGER_NAME':                          None,
-        'SERVER_NAME':                          None
+        'SERVER_NAME':                          None,
+        'MAX_CONTENT_LENGTH':                   None
     })
 
     def __init__(self, import_name, static_path=None):
@@ -271,11 +272,14 @@ class Flask(_PackageBoundObject):
         #:    app.url_map.converters['list'] = ListConverter
         self.url_map = Map()
 
-        # if there is a static folder, register it for the application.
-        if self.has_static_folder:
-            self.add_url_rule(self.static_path + '/<path:filename>',
-                              endpoint='static',
-                              view_func=self.send_static_file)
+        # register the static folder for the application.  Do that even
+        # if the folder does not exist.  First of all it might be created
+        # while the server is running (usually happens during development)
+        # but also because google appengine stores static files somewhere
+        # else when mapped with the .yml file.
+        self.add_url_rule(self.static_path + '/<path:filename>',
+                          endpoint='static',
+                          view_func=self.send_static_file)
 
         #: The Jinja2 environment.  It is created from the
         #: :attr:`jinja_options`.
@@ -306,7 +310,7 @@ class Flask(_PackageBoundObject):
 
     def create_jinja_environment(self):
         """Creates the Jinja2 environment based on :attr:`jinja_options`
-        and :meth:`create_jinja_loader`.
+        and :meth:`select_jinja_autoescape`.
 
         .. versionadded:: 0.5
         """
@@ -340,7 +344,11 @@ class Flask(_PackageBoundObject):
 
     def update_template_context(self, context):
         """Update the template context with some commonly used variables.
-        This injects request, session and g into the template context.
+        This injects request, session, config and g into the template
+        context as well as everything template context processors want
+        to inject.  Note that the as of Flask 0.6, the original values
+        in the context will not be overriden if a context processor
+        decides to return a value with the same key.
 
         :param context: the context as a dictionary that is updated in place
                         to add extra variables.
@@ -349,13 +357,23 @@ class Flask(_PackageBoundObject):
         mod = _request_ctx_stack.top.request.module
         if mod is not None and mod in self.template_context_processors:
             funcs = chain(funcs, self.template_context_processors[mod])
+        orig_ctx = context.copy()
         for func in funcs:
             context.update(func())
+        # make sure the original values win.  This makes it possible to
+        # easier add new variables in context processors without breaking
+        # existing views.
+        context.update(orig_ctx)
 
     def run(self, host='127.0.0.1', port=5000, **options):
         """Runs the application on a local development server.  If the
         :attr:`debug` flag is set the server will automatically reload
         for code changes and show a debugger in case an exception happened.
+
+        If you want to run the application in debug mode, but disable the
+        code execution on the interactive debugger, you can pass
+        ``use_evalex=False`` as parameter.  This will keep the debugger's
+        traceback screen active, but disable code execution.
 
         .. admonition:: Keep in Mind
 
@@ -426,8 +444,7 @@ class Flask(_PackageBoundObject):
         if self.config['SERVER_NAME'] is not None:
             domain = '.' + self.config['SERVER_NAME']
         session.save_cookie(response, self.session_cookie_name,
-                            expires=expires, httponly=True,
-                            domain=domain)
+                            expires=expires, httponly=True, domain=domain)
 
     def register_module(self, module, **options):
         """Registers a module with this application.  The keyword argument
@@ -436,6 +453,7 @@ class Flask(_PackageBoundObject):
         provided.
         """
         options.setdefault('url_prefix', module.url_prefix)
+        options.setdefault('subdomain', module.subdomain)
         state = _ModuleSetupState(self, **options)
         for func in module._register_events:
             func(state)
@@ -465,6 +483,9 @@ class Flask(_PackageBoundObject):
         .. versionchanged:: 0.2
            `view_func` parameter added.
 
+        .. versionchanged:: 0.6
+           `OPTIONS` is added automatically as method.
+
         :param rule: the URL rule as string
         :param endpoint: the endpoint for the registered URL rule.  Flask
                          itself assumes the name of the view function as
@@ -472,15 +493,25 @@ class Flask(_PackageBoundObject):
         :param view_func: the function to call when serving a request to the
                           provided endpoint
         :param options: the options to be forwarded to the underlying
-                        :class:`~werkzeug.routing.Rule` object
+                        :class:`~werkzeug.routing.Rule` object.  A change
+                        to Werkzeug is handling of method options.  methods
+                        is a list of methods this rule should be limited
+                        to (`GET`, `POST` etc.).  By default a rule
+                        just listens for `GET` (and implicitly `HEAD`).
+                        Starting with Flask 0.6, `OPTIONS` is implicitly
+                        added and handled by the standard request handling.
         """
         if endpoint is None:
-            assert view_func is not None, 'expected view func if endpoint ' \
-                                          'is not provided.'
-            endpoint = view_func.__name__
+            endpoint = _endpoint_from_view_func(view_func)
         options['endpoint'] = endpoint
-        options.setdefault('methods', ('GET',))
-        self.url_map.add(Rule(rule, **options))
+        methods = options.pop('methods', ('GET',))
+        provide_automatic_options = False
+        if 'OPTIONS' not in methods:
+            methods = tuple(methods) + ('OPTIONS',)
+            provide_automatic_options = True
+        rule = Rule(rule, methods=methods, **options)
+        rule.provide_automatic_options = provide_automatic_options
+        self.url_map.add(rule)
         if view_func is not None:
             self.view_functions[endpoint] = view_func
 
@@ -540,8 +571,10 @@ class Flask(_PackageBoundObject):
 
         :param rule: the URL rule as string
         :param methods: a list of methods this rule should be limited
-                        to (``GET``, ``POST`` etc.).  By default a rule
-                        just listens for ``GET`` (and implicitly ``HEAD``).
+                        to (`GET`, `POST` etc.).  By default a rule
+                        just listens for `GET` (and implicitly `HEAD`).
+                        Starting with Flask 0.6, `OPTIONS` is implicitly
+                        added and handled by the standard request handling.
         :param subdomain: specifies the rule for the subdomain in case
                           subdomain matching is in use.
         :param strict_slashes: can be used to disable the strict slashes
@@ -630,6 +663,7 @@ class Flask(_PackageBoundObject):
 
         .. versionadded: 0.3
         """
+        got_request_exception.send(self, exception=e)
         handler = self.error_handlers.get(500)
         if self.debug:
             raise
@@ -651,7 +685,15 @@ class Flask(_PackageBoundObject):
         try:
             if req.routing_exception is not None:
                 raise req.routing_exception
-            return self.view_functions[req.endpoint](**req.view_args)
+            rule = req.url_rule
+            # if we provide automatic options for this URL and the
+            # request came with the OPTIONS method, reply automatically 
+            if rule.provide_automatic_options and req.method == 'OPTIONS':
+                rv = self.response_class()
+                rv.allow.update(rule.methods)
+                return rv
+            # otherwise dispatch to the handler for that endpoint
+            return self.view_functions[rule.endpoint](**req.view_args)
         except HTTPException, e:
             return self.handle_http_exception(e)
 
@@ -687,6 +729,16 @@ class Flask(_PackageBoundObject):
             return self.response_class(*rv)
         return self.response_class.force_type(rv, request.environ)
 
+    def create_url_adapter(self, request):
+        """Creates a URL adapter for the given request.  The URL adapter
+        is created at a point where the request context is not yet set up
+        so the request is passed explicitly.
+
+        .. versionadded:: 0.6
+        """
+        return self.url_map.bind_to_environ(request.environ,
+            server_name=self.config['SERVER_NAME'])
+
     def preprocess_request(self):
         """Called before the actual request dispatching and will
         call every as :meth:`before_request` decorated function.
@@ -708,6 +760,10 @@ class Flask(_PackageBoundObject):
         before it's sent to the WSGI server.  By default this will
         call all the :meth:`after_request` decorated functions.
 
+        .. versionchanged:: 0.5
+           As of Flask 0.5 the functions registered for after request
+           execution are called in reverse order of registration.
+
         :param response: a :attr:`response_class` object.
         :return: a new response object or the same, has to be an
                  instance of :attr:`response_class`.
@@ -718,51 +774,12 @@ class Flask(_PackageBoundObject):
             self.save_session(ctx.session, response)
         funcs = ()
         if mod and mod in self.after_request_funcs:
-            funcs = chain(funcs, self.after_request_funcs[mod])
+            funcs = reversed(self.after_request_funcs[mod])
         if None in self.after_request_funcs:
-            funcs = chain(funcs, self.after_request_funcs[None])
+            funcs = chain(funcs, reversed(self.after_request_funcs[None]))
         for handler in funcs:
             response = handler(response)
         return response
-
-    def wsgi_app(self, environ, start_response):
-        """The actual WSGI application.  This is not implemented in
-        `__call__` so that middlewares can be applied without losing a
-        reference to the class.  So instead of doing this::
-
-            app = MyMiddleware(app)
-
-        It's a better idea to do this instead::
-
-            app.wsgi_app = MyMiddleware(app.wsgi_app)
-
-        Then you still have the original application object around and
-        can continue to call methods on it.
-
-        .. versionchanged:: 0.4
-           The :meth:`after_request` functions are now called even if an
-           error handler took over request processing.  This ensures that
-           even if an exception happens database have the chance to
-           properly close the connection.
-
-        :param environ: a WSGI environment
-        :param start_response: a callable accepting a status code,
-                               a list of headers and an optional
-                               exception context to start the response
-        """
-        with self.request_context(environ):
-            try:
-                rv = self.preprocess_request()
-                if rv is None:
-                    rv = self.dispatch_request()
-                response = self.make_response(rv)
-            except Exception, e:
-                response = self.make_response(self.handle_exception(e))
-            try:
-                response = self.process_response(response)
-            except Exception, e:
-                response = self.make_response(self.handle_exception(e))
-            return response(environ, start_response)
 
     def request_context(self, environ):
         """Creates a request context from the given environment and binds
@@ -810,6 +827,47 @@ class Flask(_PackageBoundObject):
         """
         from werkzeug import create_environ
         return self.request_context(create_environ(*args, **kwargs))
+
+    def wsgi_app(self, environ, start_response):
+        """The actual WSGI application.  This is not implemented in
+        `__call__` so that middlewares can be applied without losing a
+        reference to the class.  So instead of doing this::
+
+            app = MyMiddleware(app)
+
+        It's a better idea to do this instead::
+
+            app.wsgi_app = MyMiddleware(app.wsgi_app)
+
+        Then you still have the original application object around and
+        can continue to call methods on it.
+
+        .. versionchanged:: 0.4
+           The :meth:`after_request` functions are now called even if an
+           error handler took over request processing.  This ensures that
+           even if an exception happens database have the chance to
+           properly close the connection.
+
+        :param environ: a WSGI environment
+        :param start_response: a callable accepting a status code,
+                               a list of headers and an optional
+                               exception context to start the response
+        """
+        with self.request_context(environ):
+            try:
+                request_started.send(self)
+                rv = self.preprocess_request()
+                if rv is None:
+                    rv = self.dispatch_request()
+                response = self.make_response(rv)
+            except Exception, e:
+                response = self.make_response(self.handle_exception(e))
+            try:
+                response = self.process_response(response)
+            except Exception, e:
+                response = self.make_response(self.handle_exception(e))
+            request_finished.send(self, response=response)
+            return response(environ, start_response)
 
     def __call__(self, environ, start_response):
         """Shortcut for :attr:`wsgi_app`."""

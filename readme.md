@@ -12,7 +12,7 @@ here is a list of assembled components
 * flask decorators for (cache_page, login_required)
 * jinja 2.5.2
 * werkzeug 0.6.2
-* gae specific monkeypatch for werkzeug debugger (http://dev.pocoo.org/projects/werkzeug/wiki/UsingDebuggerWithAppEngine)
+* gae specific monkeypatch for werkzeug debugger [http://dev.pocoo.org/projects/werkzeug/wiki/UsingDebuggerWithAppEngine](http://dev.pocoo.org/projects/werkzeug/wiki/UsingDebuggerWithAppEngine)
 * a simple user model
 * google appengine specific development/production environment switch
 * google appengine appstats configured
@@ -25,14 +25,41 @@ here is a list of assembled components
 * jQuery 1.4.2 (loaded async from google servers)
 * lib directory for external dependencies prepended to syspath
 
+# Dependencies
+
+## General
+
+* Python 2.5
+* Google AppEngine SDK [http://code.google.com/appengine/downloads.html](http://code.google.com/appengine/downloads.html)
+
+## Testing
+
+* lxml [http://pypi.python.org/pypi/lxml](http://pypi.python.org/pypi/lxml)
+* nose [http://pypi.python.org/pypi/nose](http://pypi.python.org/pypi/nose)
+* NoseGAE [http://pypi.python.org/pypi/NoseGAE](http://pypi.python.org/pypi/NoseGAE)
+
 # Setup
 
 * change the 'secret_key' in main.py
 * set your own appengine application id in app.yaml
 * add facebook configuration to main.py
 
+# Usage
+
+## Run Application
+
+    dev_appserver.py .
+
+## Run Test Enviroment
+
+    nosetests-2.5 --with-gae tests/
+
 # TODO
 
 things we still need to extract and clean up from other projects
 
+* move settings to settings.py
 * facebook auth via oauth2 redirection (for mobile support)
+* add coverage
+* move libs to submodules
+* add selenium2 to test suite

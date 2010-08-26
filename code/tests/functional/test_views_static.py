@@ -11,7 +11,6 @@ class TestStaticPages(unittest.TestCase):
     def test_landing_index(self):
         "Should have an index for the landing page with a welcome message"
         response = self.client.get('/')
-        print response.data
         assert 'we will inform you as soon as' in response.data
 
 if __name__ == '__main__':

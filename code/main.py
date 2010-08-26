@@ -1,10 +1,10 @@
 # coding: UTF-8
+
+import settings
+
 from flask import Flask
 app = Flask(__name__)
-
-import os
-DEBUG = os.environ.get('SERVER_SOFTWARE', 'Dev').startswith('Dev')
-app.secret_key = 'j;wD=R#2]07l65r+J)9,%)D[f:1,VS.+RQ+5VY.]lP]\wY:K'
+app.config.from_object('settings')
 
 from flask import g
 from flask import redirect

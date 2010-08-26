@@ -63,3 +63,4 @@ things we still need to extract and clean up from other projects
 * add coverage
 * move libs to submodules
 * add selenium2 to test suite
+* add csrf

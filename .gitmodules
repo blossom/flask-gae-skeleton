@@ -1,0 +1,9 @@
+[submodule "submodules/flask"]
+	path = submodules/flask
+	url = http://github.com/mitsuhiko/flask.git
+[submodule "submodules/werkzeug"]
+	path = submodules/werkzeug
+	url = http://github.com/clones/werkzeug.git
+[submodule "submodules/jinja2"]
+	path = submodules/jinja2
+	url = http://github.com/clones/jinja2.git

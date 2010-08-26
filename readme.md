@@ -40,6 +40,8 @@ here is a list of assembled components
 
 # Setup
 
+* fetch all the submodules via:
+    git submodule update --init
 * change the 'secret_key' in main.py
 * set your own appengine application id in app.yaml
 * add facebook configuration to main.py

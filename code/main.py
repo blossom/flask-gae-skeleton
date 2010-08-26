@@ -67,9 +67,7 @@ def before_request():
     the user's object from memcache (or the datastore).
     if this succeeds, the user object is also added to g.
     """
-    g.facebook_application_id = ''
-    g.facebook_application_secret = ''
-    g.facebook_api_key = ''
+    g.facebook_application_id = app.config['FACEBOOK_APPLICATION_ID']
 
     if 'user_key' in session:
         user = cache.get(session['user_key'])
@@ -107,11 +105,11 @@ def session_from_facebook():
     import facebook
     # get facebook user id and token from facebook cookie
     fb_user = facebook.get_user_from_cookie(request.cookies,
-                                            g.facebook_application_id,
-                                            g.facebook_application_secret)
+                                            app.config['FACEBOOK_APPLICATION_ID'],
+                                            app.config['FACEBOOK_APPLICATION_SECRET'])
 
     if fb_user:
-        # check whether the user is already in the datastore
+        # check whether the user is already in the datastoreg
         user = User.all().filter('facebook_id =', str(fb_user['uid'])).get()
 
         if user is None:

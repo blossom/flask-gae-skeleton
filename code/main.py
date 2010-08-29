@@ -19,7 +19,7 @@ from flask import json
 
 from models import User
 
-from deck.util import generate_key
+from gaeUtils.util import generate_key
 from google.appengine.api.labs import taskqueue
 from functools import wraps
 

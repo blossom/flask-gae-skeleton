@@ -41,7 +41,9 @@ here is a list of assembled components
 # Setup
 
 * fetch all the submodules via:
+
     git submodule update --init
+
 * change the 'secret_key' in main.py
 * set your own appengine application id in app.yaml
 * add facebook configuration to main.py
@@ -50,9 +52,13 @@ here is a list of assembled components
 
 ## Run Application
 
+Go to path "code" and run
+
     dev_appserver.py .
 
 ## Run Test Enviroment
+
+Go to path "code" and run
 
     nosetests-2.5 --with-gae tests/
 

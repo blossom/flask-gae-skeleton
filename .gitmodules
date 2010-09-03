@@ -13,3 +13,6 @@
 [submodule "code/lib/gaeUtils"]
 	path = code/lib/gaeUtils
 	url = git@github.com:deck/gae-utils.git
+[submodule "code/lib/gaePath"]
+	path = code/lib/gaePath
+	url = git@github.com:nikgraf/gae-path.git

@@ -12,12 +12,12 @@ import os
 
 root_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(root_dir, 'lib'))
-from gaePath.util import app_engine_sdk_path, add_app_engine_sdk_path
+from gaePath.util import gae_sdk_path, add_gae_sdk_path
 
-add_app_engine_sdk_path()
-sys.path.append(app_engine_sdk_path() + "/lib/yaml/lib")
-sys.path.append(app_engine_sdk_path() + "/lib/fancy_urllib")
-sys.path.append(app_engine_sdk_path() + '/lib/webob')
+add_gae_sdk_path()
+sys.path.append(gae_sdk_path() + "/lib/yaml/lib")
+sys.path.append(gae_sdk_path() + "/lib/fancy_urllib")
+sys.path.append(gae_sdk_path() + '/lib/webob')
 
 from google.appengine.ext.remote_api import remote_api_stub
 from google.appengine.ext import db

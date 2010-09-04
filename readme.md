@@ -30,6 +30,7 @@ here is a list of assembled components
 * werkzeug 0.6.2
 * Facebook python sdk (commit 2da0f678f0c0c5a5ddc77b7456dde232e9b98bd9)
 * gaeUtils from deck [http://github.com/deck/gae-utils](http://github.com/deck/gae-utils)
+* gaePath [http://github.com/nikgraf/gae-path](http://github.com/nikgraf/gae-path)
 
 # Javascript
 
@@ -73,12 +74,19 @@ Go to path "code" and run
 
     nosetests-2.5 --with-gae tests/
 
+## Run Remote Console
+
+Go to path "code" and run
+
+    python2.5 appengine_console.py <app-id>
+
 # TODO
 
 things we still need to extract and clean up from other projects
 
 * facebook auth via oauth2 redirection (for mobile support)
 * add coverage
-* move libs to submodules
 * add selenium2 to test suite
 * add csrf
+* move style to css file
+* make js unobtrusiv

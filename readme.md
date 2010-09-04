@@ -90,3 +90,4 @@ things we still need to extract and clean up from other projects
 * add csrf
 * move style to css file
 * make js unobtrusiv
+* add fixture (http://farmdev.com/projects/fixture/using-fixture-with-appengine.html)

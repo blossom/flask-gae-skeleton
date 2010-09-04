@@ -2,7 +2,8 @@ from wsgiref.handlers import CGIHandler
 from google.appengine.ext.appstats import recording
 import sys, os
 
-sys.path.insert(0, os.path.dirname(__file__) + '/lib')
+root_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(root_dir, 'lib'))
 
 from main import app
 
@@ -11,7 +12,7 @@ if 'SERVER_SOFTWARE' in os.environ and os.environ['SERVER_SOFTWARE'].startswith(
     import debug.utils
     sys.modules['werkzeug.debug.utils'] = debug.utils
 
-    # don't use inspect.getsourcefile because the imp module is empty 
+    # don't use inspect.getsourcefile because the imp module is empty
     import inspect
     inspect.getsourcefile = inspect.getfile
 

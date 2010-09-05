@@ -49,6 +49,7 @@ here is a list of assembled components
 * lxml [http://pypi.python.org/pypi/lxml](http://pypi.python.org/pypi/lxml)
 * nose [http://pypi.python.org/pypi/nose](http://pypi.python.org/pypi/nose)
 * NoseGAE [http://pypi.python.org/pypi/NoseGAE](http://pypi.python.org/pypi/NoseGAE)
+* selenium 2+ [http://pypi.python.org/pypi/selenium](http://pypi.python.org/pypi/selenium)
 
 # Setup
 
@@ -56,9 +57,9 @@ here is a list of assembled components
 
     git submodule update --init
 
-* change the 'secret_key' in main.py
 * set your own appengine application id in app.yaml
-* add facebook configuration to main.py
+* change the 'secret_key' in settings.py
+* add facebook configuration to settings.py
 
 # Usage
 
@@ -84,9 +85,10 @@ Go to path "code" and run
 
 things we still need to extract and clean up from other projects
 
+* set port for testing via configuration in settings or test_settings
+* kill subprocess dev_appserver for selenium tests also in windows (see python2.6 implementation how to kill a process)
 * facebook auth via oauth2 redirection (for mobile support)
 * add coverage
-* add selenium2 to test suite
 * add csrf
 * move style to css file
 * make js unobtrusiv

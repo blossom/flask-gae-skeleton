@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
+import os
+import signal
+from subprocess import Popen
+from selenium.firefox.webdriver import WebDriver
+
 import unittest
+
 from main import app
+
 
 class TestStaticPages(unittest.TestCase):
 
@@ -13,5 +20,17 @@ class TestStaticPages(unittest.TestCase):
         response = self.client.get('/')
         assert 'we will inform you as soon as' in response.data
 
-if __name__ == '__main__':
-    unittest.main()
+class TestStaticPagesWithJs(unittest.TestCase):
+
+    def setUp(self):
+        self.server = Popen("dev_appserver.py . --port=80", shell=True)
+        self.browser = WebDriver()
+
+    def tearDown(self):
+        self.browser.quit()
+        # same as in python2.6 subprocess for posix systems (so currently no windows support)
+        os.kill(self.server.pid, signal.SIGTERM)
+
+    def test_landing_index_with_js(self):
+        self.browser.get('http://localhost')
+        assert 'we will inform you as soon as' in self.browser.get_page_source()

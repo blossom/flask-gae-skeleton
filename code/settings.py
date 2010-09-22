@@ -8,3 +8,8 @@ FACEBOOK_API_KEY = ''
 
 # CSRF_ENABLED=True
 # CSRF_SESSION_LKEY=''
+
+""" Testing Configuration """
+
+FACEBOOK_USER_EMAIL = ''
+FACEBOOK_USER_PASSWORD = ''

@@ -7,6 +7,7 @@ from selenium.firefox.webdriver import WebDriver
 import unittest
 
 from main import app
+import settings
 
 
 class TestStaticPages(unittest.TestCase):

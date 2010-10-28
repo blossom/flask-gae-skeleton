@@ -19,7 +19,7 @@ class TestStaticPages(unittest.TestCase):
     def test_landing_index(self):
         "Should have an index for the landing page with a welcome message"
         response = self.client.get('/')
-        assert 'we will inform you as soon as' in response.data
+        assert 'Welcome to Flask-Gae-Skeleton!' in response.data
 
 class TestStaticPagesWithJs(unittest.TestCase):
 
@@ -34,4 +34,4 @@ class TestStaticPagesWithJs(unittest.TestCase):
 
     def test_landing_index_with_js(self):
         self.browser.get('http://localhost')
-        assert 'we will inform you as soon as' in self.browser.get_page_source()
+        assert 'Welcome to Flask-Gae-Skeleton!' in self.browser.get_page_source()

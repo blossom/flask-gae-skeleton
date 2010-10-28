@@ -32,11 +32,6 @@ here is a list of assembled components
 * gaeUtils from deck [http://github.com/deck/gae-utils](http://github.com/deck/gae-utils)
 * gaePath [http://github.com/nikgraf/gae-path](http://github.com/nikgraf/gae-path)
 
-# Javascript
-
-* jQuery 1.4.2 (loaded async from google servers)
-* Facebook Javascript SDK (loaded async from facebook servers)
-
 # Dependencies
 
 ## General
@@ -59,7 +54,6 @@ here is a list of assembled components
 
 * set your own appengine application id in app.yaml
 * change the 'secret_key' in settings.py
-* add facebook configuration to settings.py
 
 # Usage
 
@@ -87,9 +81,6 @@ things we still need to extract and clean up from other projects
 
 * set port for testing via configuration in settings or test_settings
 * kill subprocess dev_appserver for selenium tests also in windows (see python2.6 implementation how to kill a process)
-* facebook auth via oauth2 redirection (for mobile support)
 * add coverage
 * add csrf
-* move style to css file
-* make js unobtrusiv
 * add fixture (http://farmdev.com/projects/fixture/using-fixture-with-appengine.html)

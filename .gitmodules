@@ -7,9 +7,6 @@
 [submodule "submodules/jinja2"]
 	path = submodules/jinja2
 	url = http://github.com/clones/jinja2.git
-[submodule "submodules/facebook-sdk"]
-	path = submodules/facebook-sdk
-	url = http://github.com/facebook/python-sdk.git
 [submodule "code/lib/gaeUtils"]
 	path = code/lib/gaeUtils
 	url = git@github.com:deck/gae-utils.git

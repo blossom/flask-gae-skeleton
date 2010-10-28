@@ -62,13 +62,10 @@ def cache_page(timeout=5 * 60, key='view/%s'):
 @app.before_request
 def before_request():
     """
-    adds facebook configuration data to g.
     if the session includes a user_key it will also try to fetch
     the user's object from memcache (or the datastore).
     if this succeeds, the user object is also added to g.
     """
-    g.facebook_application_id = app.config['FACEBOOK_APPLICATION_ID']
-
     if 'user_key' in session:
         user = cache.get(session['user_key'])
 
@@ -89,42 +86,6 @@ def before_request():
 @app.route('/')
 def landing():
     """
-    renders the landing page template which includes example usage of
-    jquery in combination with the facebook-connect js api
+    renders the landing page template
     """
     return render_template('landing.html')
-
-@app.route('/session/', methods=['PUT'])
-def session_from_facebook():
-    """
-    uses the facebook session cookie to create a site specific session.
-
-    it will also fetch profile information from facebook and add
-    the user to the datastore if it does not exist yet
-    """
-    import facebook
-    # get facebook user id and token from facebook cookie
-    fb_user = facebook.get_user_from_cookie(request.cookies,
-                                            app.config['FACEBOOK_APPLICATION_ID'],
-                                            app.config['FACEBOOK_APPLICATION_SECRET'])
-
-    if fb_user:
-        # check whether the user is already in the datastoreg
-        user = User.all().filter('facebook_id =', str(fb_user['uid'])).get()
-
-        if user is None:
-            # if not we fetch his profile information via the facebook graph api
-            graph = facebook.GraphAPI(fb_user["access_token"])
-            profile = graph.get_object("me")
-
-            # now we can put the user in the datastore
-            user = User(key_name=generate_key(),
-                        facebook_id=str(profile['id']),
-                        facebook_token=request.values.get('access_token'),
-                        email=profile['email'],
-                        name=profile['name'])
-            user.save()
-
-        # last but not least we add the user's key to the session cookie
-        session['user_key'] = user.key().name()
-    return "ok"

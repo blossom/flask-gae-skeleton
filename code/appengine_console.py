@@ -33,6 +33,6 @@ if len(sys.argv) > 2:
 else:
     host = '%s.appspot.com' % app_id
 
-remote_api_stub.ConfigureRemoteDatastore(app_id, '/remote_api', auth_func, host)
+remote_api_stub.ConfigureRemoteDatastore(app_id, '/_ah/remote_api', auth_func, host)
 
 code.interact('App Engine interactive console for %s' % (app_id,), None, locals())

@@ -79,7 +79,7 @@ Go to path "code" and run
 
 things we still need to extract and clean up from other projects
 
-* move decorators to seperate file
+* add tests for decorators
 * set port for testing via configuration in settings or test_settings
 * kill subprocess dev_appserver for selenium tests also in windows (see python2.6 implementation how to kill a process)
 * add coverage

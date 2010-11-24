@@ -48,12 +48,23 @@ here is a list of assembled components
 
 # Setup
 
+* clone repository
+
+    git clone git@github.com:deck/flask-gae-skeleton.git <project_name>
+
 * fetch all the submodules via:
 
     git submodule update --init
 
 * set your own appengine application id in app.yaml
 * change the 'secret_key' in settings.py
+
+* add replace remote
+
+    git remote rm origin
+    git remote add origin <new_remote like git@github.com:your_name/project_name.git>
+    git commit -am "initial setup"
+    git push origin master
 
 # Usage
 

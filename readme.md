@@ -25,10 +25,9 @@ here is a list of assembled components
 
 ### Python
 
-* Flask 0.6
-* Jinja 2.5.2
-* werkzeug 0.6.2
-* Facebook python sdk (commit 2da0f678f0c0c5a5ddc77b7456dde232e9b98bd9)
+* Flask
+* Jinja
+* werkzeug
 * gaeUtils from deck [http://github.com/deck/gae-utils](http://github.com/deck/gae-utils)
 * gaePath [http://github.com/nikgraf/gae-path](http://github.com/nikgraf/gae-path)
 
@@ -94,5 +93,4 @@ things we still need to extract and clean up from other projects
 * set port for testing via configuration in settings or test_settings
 * kill subprocess dev_appserver for selenium tests also in windows (see python2.6 implementation how to kill a process)
 * add coverage
-* add csrf
 * add fixture (http://farmdev.com/projects/fixture/using-fixture-with-appengine.html)

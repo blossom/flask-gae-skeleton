@@ -1,12 +1,6 @@
 [submodule "submodules/flask"]
 	path = submodules/flask
 	url = https://github.com/mitsuhiko/flask.git
-[submodule "code/lib/gaeUtils"]
-	path = code/lib/gaeUtils
-	url = https://github.com/deck/gae-utils.git
-[submodule "code/lib/gaePath"]
-	path = code/lib/gaePath
-	url = https://github.com/nikgraf/gae-path.git
 [submodule "submodules/jinja2"]
 	path = submodules/jinja2
 	url = https://github.com/mitsuhiko/jinja2.git

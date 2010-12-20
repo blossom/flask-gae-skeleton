@@ -51,6 +51,10 @@ clone repository
 
     git clone https://github.com/deck/flask-gae-skeleton.git <project_name>
 
+change to directory of <project_name>
+
+    cd <project_name>
+
 fetch all the submodules via
 
     git submodule update --init

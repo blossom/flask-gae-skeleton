@@ -61,7 +61,7 @@ fetch all the submodules via
 
 set your own appengine application id in app.yaml
 
-change the 'secret_key' in settings.py
+change the 'secret_key' in settings.py by generating a new one
 
 add replace remote
 

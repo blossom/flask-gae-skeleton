@@ -10,6 +10,7 @@
 [submodule "submodules/gaePath"]
 	path = submodules/gaePath
 	url = https://github.com/nikgraf/gae-path.git
+
 [submodule "submodules/gaeUtils"]
 	path = submodules/gaeUtils
-	url = https://github.com/deck/gae-utils.git
+	url = https://github.com/blossom/gae-utils.git

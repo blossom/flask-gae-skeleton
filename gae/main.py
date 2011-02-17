@@ -49,8 +49,8 @@ def before_request():
         g.user = None
 
 @app.route('/')
-def landing():
+def index():
     """
-    renders the landing page template
+    renders the index page template
     """
-    return render_template('landing.html')
+    return render_template('index.html')

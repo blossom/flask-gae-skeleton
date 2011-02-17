@@ -11,12 +11,12 @@ cache = GAEMemcachedCache()
 
 def login_required(f):
     """
-    redirects to the landing page if the user has no session
+    redirects to the index page if the user has no session
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if g.user is None:
-            return redirect(url_for('landing'))
+            return redirect(url_for('index'))
         return f(*args, **kwargs)
     return decorated_function
 

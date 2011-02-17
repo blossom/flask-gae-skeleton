@@ -16,8 +16,8 @@ class TestStaticPages(unittest.TestCase):
         app.config['TESTING'] = True
         self.client = app.test_client()
 
-    def test_landing_index(self):
-        "Should have an index for the landing page with a welcome message"
+    def test_index(self):
+        "Should have an index page with a welcome message"
         response = self.client.get('/')
         assert 'Welcome to Flask-Gae-Skeleton!' in response.data
 
@@ -32,6 +32,6 @@ class TestStaticPagesWithJs(unittest.TestCase):
         # same as in python2.6 subprocess for posix systems (so currently no windows support)
         os.kill(self.server.pid, signal.SIGTERM)
 
-    def test_landing_index_with_js(self):
+    def test_index_with_js(self):
         self.browser.get('http://localhost')
         assert 'Welcome to Flask-Gae-Skeleton!' in self.browser.get_page_source()

@@ -28,7 +28,7 @@ here is a list of assembled components
 * Flask
 * Jinja
 * werkzeug
-* gaeUtils from deck [http://github.com/deck/gae-utils](http://github.com/deck/gae-utils)
+* gaeUtils from deck [http://github.com/blossom/gae-utils](http://github.com/deck/gae-utils)
 * gaePath [http://github.com/nikgraf/gae-path](http://github.com/nikgraf/gae-path)
 
 # Dependencies
@@ -49,7 +49,7 @@ here is a list of assembled components
 
 clone repository
 
-    git clone https://github.com/deck/flask-gae-skeleton.git <project_name>
+    git clone https://github.com/blossom/flask-gae-skeleton.git <project_name>
 
 change to directory of <project_name>
 
@@ -74,7 +74,7 @@ add replace remote
 
 Add the remote and merge in all changes and removes the old stuff again.
 
-    git remote add skeleton https://github.com/deck/flask-gae-skeleton.git
+    git remote add skeleton https://github.com/blossom/flask-gae-skeleton.git
     git pull skeleton
     git checkout -b skeleton remotes/skeleton/master
     git rebase <your_development_branch like master>

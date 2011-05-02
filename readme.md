@@ -88,19 +88,19 @@ Add the remote and merge in all changes and removes the old stuff again.
 
 ## Run Application
 
-Go to path "code" and run
+Go to path "gae" and run
 
     dev_appserver.py .
 
 ## Run Test Enviroment
 
-Go to path "code" and run
+Go to path "gae" and run
 
     nosetests-2.5 --with-gae tests/
 
 ## Run Remote Console
 
-Go to path "code" and run
+Go to path "gae" and run
 
     python2.5 appengine_console.py <app-id>
 

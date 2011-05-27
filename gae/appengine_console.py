@@ -18,6 +18,7 @@ add_gae_sdk_path()
 sys.path.append(gae_sdk_path() + "/lib/yaml/lib")
 sys.path.append(gae_sdk_path() + "/lib/fancy_urllib")
 sys.path.append(gae_sdk_path() + '/lib/webob')
+sys.path.append(gae_sdk_path() + '/lib/simplejson')
 
 from google.appengine.ext.remote_api import remote_api_stub
 from google.appengine.ext import db

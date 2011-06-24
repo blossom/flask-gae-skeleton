@@ -3,7 +3,9 @@ from google.appengine.ext.appstats import recording
 import sys, os
 
 root_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(root_dir, 'lib'))
+lib_dir = os.path.join(root_dir, 'lib')
+if lib_dir not in sys.path:
+    sys.path.insert(0, lib_dir)
 
 from main import app
 
